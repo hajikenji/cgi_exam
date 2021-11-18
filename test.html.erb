@@ -1,0 +1,66 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <h1>テスト！！！！！！！！！！！！！</h1>
+    <% require 'pg' %>
+    <% connection = PG::connect(dbname: "goya") %>
+    <% connection.internal_encoding = "UTF-8" %>
+    <form action="indicate.cgi" method="POST">
+       下記に文字を入力してください<br><br>
+      <input type="text"  name="input" ><br>
+      <input type="submit" name="送信" >
+    </form>
+    <% result = connection.exec("select weight, give_for from crops ;") %>
+    <% data = [] %>
+    <% result.each do |record| %>
+      <%  data << "ゴーヤの大きさ：#{record["weight"]}　売った相手：#{record["give_for"]}" %>
+    <% end %>
+    <%# 以下追記部分 %>
+    <% result1 = connection.exec("select * from crops where not give_for = '自家消費';") %>
+    <% data1 = [] %>
+    <% result1.each do |record1| %>
+      <%  data1 << "
+      ゴーヤの大きさ：#{record1["weight"]}　売った相手：#{record1["give_for"]} 
+      長さ : #{record1["length"]}　 質: #{record1["quality"]} 日にち: #{record1["date"]}
+      " %>
+
+
+    <% end %>
+    <% result2 = connection.exec("select * from crops where quality = false;") %>
+    <% data2 = [] %>
+    <% result2.each do |record2| %>
+      <%  data2 << "
+      ゴーヤの大きさ：#{record2["weight"]}　売った相手：#{record2["give_for"]} 
+      長さ : #{record2["length"]}　 質: #{record2["quality"]} 日にち: #{record2["date"]}
+      " %>
+
+
+    <% end %>
+
+    <form action="goyaa.cgi" method="POST">
+       下記のボタンを押すと、ゴーヤの大きさと売った相手の情報ページに飛びます<br><br>
+       <!-- valueには、送りたいデータを代入する -->
+       <!-- name="goya"を、情報の目印とする -->
+      <input type="text" name="goya" value="<%= data.join(' ') %>">
+      <input type="submit" name="送信" >
+    <%# 以下追記部分 %>
+    <br>
+    </form>
+    <form action="goyab.cgi" method="POST">
+       下記のボタンを押すと、自家消費ではないものの情報ページに飛びます<br><br>
+       <!-- valueには、送りたいデータを代入する -->
+       <!-- name="goya"を、情報の目印とする -->
+      <input type="text" name="goyab" value="<%= data1.join(' ') %>">
+      <input type="submit" name="送信" value="送る">
+    </form>
+    <form action="goyac.cgi" method="POST">
+       下記のボタンを押すと、自家消費ではないものの情報ページに飛びます<br><br>
+       <!-- valueには、送りたいデータを代入する -->
+       <!-- name="goya"を、情報の目印とする -->
+      <input type="text" name="goyac" value="<%= data2.join(' ') %>">
+      <input type="submit" name="送信" value="送る">
+    </form>
+  </body>
+</html>
